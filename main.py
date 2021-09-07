@@ -3,6 +3,7 @@ import asyncio
 import discord
 import app.settings
 import app.data_interface
+import app.modules.strava
 
 CHANNEL = "beepbop"
 CHANNEL_ID = 884636204866347048
@@ -10,13 +11,14 @@ UPDATE_INTERVAL = 60 * 60
 
 client = discord.Client()
 interface = app.data_interface.DataInterface()
+strava = app.modules.strava.StravaModule(app.settings.getStravaData(), app.settings.updateSettingsCallback)
 
 def getFullDiscordName(author):
     return author.name + "#" + author.discriminator
 
 async def delayedUpdate():
     while True:
-        # await client.get_channel(CHANNEL_ID).send("update")
+        print(strava.getActivities())
         await asyncio.sleep(UPDATE_INTERVAL)
 
 @client.event
