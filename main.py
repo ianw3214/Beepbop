@@ -1,13 +1,27 @@
-from asyncio import events
+import asyncio
+
 import discord
-import settings
+import app.settings
+import app.data_interface
 
 CHANNEL = "beepbop"
+CHANNEL_ID = 884636204866347048
+UPDATE_INTERVAL = 60 * 60
 
 client = discord.Client()
+interface = app.data_interface.DataInterface()
+
+def getFullDiscordName(author):
+    return author.name + "#" + author.discriminator
+
+async def delayedUpdate():
+    while True:
+        # await client.get_channel(CHANNEL_ID).send("update")
+        await asyncio.sleep(UPDATE_INTERVAL)
 
 @client.event
 async def on_ready():
+    client.loop.create_task(delayedUpdate())
     print("Beepbop is now online")
 
 @client.event
@@ -18,6 +32,13 @@ async def on_message(message):
     # only listen to our dedicated channel
     if message.channel.name != CHANNEL:
         return
-    await message.channel.send(message.content)
+    # handle bot commands
+    if message.content[0] == "$":
+        tokens = message.content.split(" ")
+        head = tokens[0][1:]
+        if head == "signup" or head == "register":
+            interface.registerUser(getFullDiscordName(message.author))
+        if head == "help" or head == "command":
+            await message.channel.send("Check out a list of helpful commands here! https://github.com/ianw3214/Beepbop")
 
-client.run(settings.getDiscordBotToken())
+client.run(app.settings.getDiscordBotToken())
