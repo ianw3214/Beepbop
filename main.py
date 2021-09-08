@@ -11,14 +11,23 @@ UPDATE_INTERVAL = 60 * 60
 
 client = discord.Client()
 interface = app.data_interface.DataInterface()
-strava = app.modules.strava.StravaModule(app.settings.getStravaData(), app.settings.updateSettingsCallback)
+
+modules = {}
+
+def initModules():
+    strava = app.modules.strava.StravaModule(app.settings.getStravaData(), app.settings.updateSettingsCallback)
+    addModule(strava)
+
+def addModule(module):
+    modules[module.getPrefix()] = module
 
 def getFullDiscordName(author):
     return author.name + "#" + author.discriminator
 
 async def delayedUpdate():
     while True:
-        print(strava.getActivities())
+        for module in modules.values():
+            module.delayedUpdate()
         await asyncio.sleep(UPDATE_INTERVAL)
 
 @client.event
@@ -43,4 +52,5 @@ async def on_message(message):
         if head == "help" or head == "command":
             await message.channel.send("Check out a list of helpful commands here! https://github.com/ianw3214/Beepbop")
 
+initModules()
 client.run(app.settings.getDiscordBotToken())

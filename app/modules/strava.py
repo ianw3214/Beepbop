@@ -1,19 +1,31 @@
 import requests
+import app.module
+
 import time
 
 TOKEN_REFRESH_ENDPOINT="https://www.strava.com/api/v3/oauth/token"
 CLUB_ACTIVITIES_ENDPOINT="https://www.strava.com/api/v3/clubs/978192/activities"
 
-class StravaModule:
+def testFunc():
+    print("TEST")
+
+class StravaModule(app.module.Module):
     def __init__(self, rawData, updateSettingsCallback):
+        app.module.Module.__init__(self, "strava")
         self.clientID = rawData["clientID"]
         self.clientSecret = rawData["clientSecret"]
         self.token = rawData["token"]
         self.refresh = rawData["refresh"]
         self.expires = rawData["expires"]
+        # TODO: Replace this callback with a direct interface to datastore
         self.updateSettingsCallback = updateSettingsCallback
+        self._registerCommand("test", testFunc)
 
-    def getAccessToken(self):
+    # OVERRIDE
+    def delayedUpdate(self):
+        print("Strava update")
+
+    def _getAccessToken(self):
         currTime = round(time.time())
         # Check if we need to refresh the token
         if currTime >= self.expires:
@@ -28,7 +40,7 @@ class StravaModule:
             # TODO: Handle request failure
             newData = response.json()
             self.token = newData["access_token"]
-            self.refresh = newData["refresh"]
+            self.refresh = newData["refresh_token"]
             self.expires = newData["expires_in"]
             # Write this all back to the file in case we need to load again
             self.updateSettingsCallback(self.token, self.refresh, self.expires)
@@ -42,7 +54,7 @@ class StravaModule:
 
     def getActivities(self):
         print("Getting activities")
-        token = self.getAccessToken()
+        token = self._getAccessToken()
         authHeader = self.getAuthHeader()
         response = requests.get(CLUB_ACTIVITIES_ENDPOINT, headers=authHeader)
         # TODO: Handle request failure
