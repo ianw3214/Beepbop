@@ -6,9 +6,6 @@ import time
 TOKEN_REFRESH_ENDPOINT="https://www.strava.com/api/v3/oauth/token"
 CLUB_ACTIVITIES_ENDPOINT="https://www.strava.com/api/v3/clubs/978192/activities"
 
-def testFunc():
-    print("TEST")
-
 class StravaModule(app.module.Module):
     def __init__(self, rawData, updateSettingsCallback):
         app.module.Module.__init__(self, "strava")
@@ -19,7 +16,6 @@ class StravaModule(app.module.Module):
         self.expires = rawData["expires"]
         # TODO: Replace this callback with a direct interface to datastore
         self.updateSettingsCallback = updateSettingsCallback
-        self._registerCommand("test", testFunc)
 
     # OVERRIDE
     def delayedUpdate(self):

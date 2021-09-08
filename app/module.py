@@ -6,7 +6,7 @@ class Module:
     def __init__(self, prefix, channel=DEFAULT_CHANNEL):
         self.prefix = prefix
         self.channel = channel
-        self.commands = {}
+        self.messageCommands = {}
     
     def getPrefix(self):
         return self.prefix
@@ -14,15 +14,15 @@ class Module:
     def getChannel(self):
         return self.channel
     
-    def handleCommand(self, tokens):
+    def handleMessageCommand(self, rawMessage, tokens):
         head = tokens[0]
-        if head in self.commands:
-            self.commands[head](tokens[1:])
+        if head in self.messageCommands:
+            self.messageCommands[head](rawMessage, tokens[1:])
     
     def delayedUpdate(self):
         pass
 
-    def _registerCommand(self, command, func):
-        if command in self.commands:
+    def _registerMessageCommand(self, command, func):
+        if command in self.messageCommands:
             raise Exception("{} is already a command".format(command))
-        self.commands[command] = func
+        self.messageCommands[command] = func

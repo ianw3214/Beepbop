@@ -4,6 +4,9 @@ import discord
 import app.settings
 import app.data_interface
 import app.modules.strava
+import app.modules.plant
+
+import util.discord
 
 CHANNEL = "beepbop"
 CHANNEL_ID = 884636204866347048
@@ -17,18 +20,18 @@ modules = {}
 def initModules():
     strava = app.modules.strava.StravaModule(app.settings.getStravaData(), app.settings.updateSettingsCallback)
     addModule(strava)
+    plant = app.modules.plant.PlantModule()
+    addModule(plant)
 
 def addModule(module):
     modules[module.getPrefix()] = module
-
-def getFullDiscordName(author):
-    return author.name + "#" + author.discriminator
 
 async def delayedUpdate():
     while True:
         for module in modules.values():
             module.delayedUpdate()
-        await asyncio.sleep(UPDATE_INTERVAL)
+        # await asyncio.sleep(UPDATE_INTERVAL)
+        await asyncio.sleep(10)
 
 @client.event
 async def on_ready():
@@ -48,9 +51,11 @@ async def on_message(message):
         tokens = message.content.split(" ")
         head = tokens[0][1:]
         if head == "signup" or head == "register":
-            interface.registerUser(getFullDiscordName(message.author))
+            interface.registerUser(util.getMessageAuthorID(message))
         if head == "help" or head == "command":
             await message.channel.send("Check out a list of helpful commands here! https://github.com/ianw3214/Beepbop")
+        if head in modules:
+            modules[head].handleMessageCommand(message, tokens[1:])
 
 initModules()
 client.run(app.settings.getDiscordBotToken())
