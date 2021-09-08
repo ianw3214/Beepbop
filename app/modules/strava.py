@@ -3,6 +3,8 @@ import app.module
 
 import time
 
+import util.logger
+
 TOKEN_REFRESH_ENDPOINT="https://www.strava.com/api/v3/oauth/token"
 CLUB_ACTIVITIES_ENDPOINT="https://www.strava.com/api/v3/clubs/978192/activities"
 
@@ -19,13 +21,13 @@ class StravaModule(app.module.Module):
 
     # OVERRIDE
     def delayedUpdate(self):
-        print("Strava update")
+        pass
 
     def _getAccessToken(self):
         currTime = round(time.time())
         # Check if we need to refresh the token
         if currTime >= self.expires:
-            print("refreshing strava token")
+            util.logger.log("strava", "sending refresh token")
             fields = { 
                 "client_id" : self.clientID,
                 "client_secret" : self.clientSecret,
@@ -40,6 +42,7 @@ class StravaModule(app.module.Module):
             self.expires = newData["expires_in"]
             # Write this all back to the file in case we need to load again
             self.updateSettingsCallback(self.token, self.refresh, self.expires)
+            util.logger.log("strava", "new authorization token set")
         return self.token
 
     def getAuthHeader(self):
@@ -49,7 +52,6 @@ class StravaModule(app.module.Module):
         }
 
     def getActivities(self):
-        print("Getting activities")
         token = self._getAccessToken()
         authHeader = self.getAuthHeader()
         response = requests.get(CLUB_ACTIVITIES_ENDPOINT, headers=authHeader)

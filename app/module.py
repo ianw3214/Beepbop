@@ -18,7 +18,7 @@ class Module:
         head = tokens[0]
         if head in self.messageCommands:
             self.messageCommands[head](rawMessage, tokens[1:])
-    
+
     def delayedUpdate(self):
         pass
 

@@ -6,7 +6,7 @@ import app.data_interface
 import app.modules.strava
 import app.modules.plant
 
-import util.discord
+import util.logger
 
 CHANNEL = "beepbop"
 CHANNEL_ID = 884636204866347048
@@ -30,16 +30,16 @@ async def delayedUpdate():
     while True:
         for module in modules.values():
             module.delayedUpdate()
-        # await asyncio.sleep(UPDATE_INTERVAL)
-        await asyncio.sleep(10)
+        await asyncio.sleep(UPDATE_INTERVAL)
 
 @client.event
 async def on_ready():
     client.loop.create_task(delayedUpdate())
-    print("Beepbop is now online")
+    util.logger.log("core", "beepbop is now online")
 
 @client.event
 async def on_message(message):
+    print(message.author.id)
     # Avoid responding to own messages
     if message.author == client.user:
         return

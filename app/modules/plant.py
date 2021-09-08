@@ -1,6 +1,6 @@
 import app.module
 
-import util.discord
+import util.logger
 
 import datetime
 import dateutil
@@ -21,11 +21,12 @@ class PlantModule(app.module.Module):
                 needsWater = lastTime + delta
                 if currTime > needsWater:
                     # TODO: Send a message to the channel
-                    print("Plant {} needs to be watered!".format(plant))
+                    message = "Plant {} needs to be watered!".format(plant)
+                    util.logger.log("plant", message)
 
     # COMMAND: $plant add <name> <days-to-water>
     def addPlant(self, rawMessage, tokens):
-        user = util.discord.getMessageAuthorID(rawMessage)
+        user = rawMessage.author.id
         if len(tokens) < 2:
             # TODO: Error handling
             return
@@ -39,7 +40,8 @@ class PlantModule(app.module.Module):
             "lastWatered" : datetime.datetime.now()
         }
         self.plants[user][plantName] = plantData
-        print(plantData)
+        message = "Added plant {} for user {}".format(plantName, user)
+        util.logger.log("plant", message)
         
     def _dateToStr(self, date):
         return str(date)
