@@ -1,7 +1,8 @@
 import requests
-import app.module
-
 import time
+
+import app.module
+import app.settings
 
 import util.logger
 
@@ -9,18 +10,17 @@ TOKEN_REFRESH_ENDPOINT="https://www.strava.com/api/v3/oauth/token"
 CLUB_ACTIVITIES_ENDPOINT="https://www.strava.com/api/v3/clubs/978192/activities"
 
 class StravaModule(app.module.Module):
-    def __init__(self, rawData, updateSettingsCallback):
-        app.module.Module.__init__(self, "strava")
+    def __init__(self, client):
+        app.module.Module.__init__(self, client, "strava")
+        rawData = app.settings.getStravaData()
         self.clientID = rawData["clientID"]
         self.clientSecret = rawData["clientSecret"]
         self.token = rawData["token"]
         self.refresh = rawData["refresh"]
         self.expires = rawData["expires"]
-        # TODO: Replace this callback with a direct interface to datastore
-        self.updateSettingsCallback = updateSettingsCallback
 
     # OVERRIDE
-    def delayedUpdate(self):
+    async def delayedUpdate(self):
         pass
 
     def _getAccessToken(self):
@@ -41,7 +41,7 @@ class StravaModule(app.module.Module):
             self.refresh = newData["refresh_token"]
             self.expires = newData["expires_in"]
             # Write this all back to the file in case we need to load again
-            self.updateSettingsCallback(self.token, self.refresh, self.expires)
+            app.settings.updateSettingsCallback(self.token, self.refresh, self.expires)
             util.logger.log("strava", "new authorization token set")
         return self.token
 

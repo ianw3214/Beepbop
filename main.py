@@ -2,7 +2,6 @@ import asyncio
 
 import discord
 import app.settings
-import app.data_interface
 import app.modules.strava
 import app.modules.plant
 
@@ -13,14 +12,12 @@ CHANNEL_ID = 884636204866347048
 UPDATE_INTERVAL = 60 * 60
 
 client = discord.Client()
-interface = app.data_interface.DataInterface()
-
 modules = {}
 
 def initModules():
-    strava = app.modules.strava.StravaModule(app.settings.getStravaData(), app.settings.updateSettingsCallback)
+    strava = app.modules.strava.StravaModule(client)
     addModule(strava)
-    plant = app.modules.plant.PlantModule()
+    plant = app.modules.plant.PlantModule(client)
     addModule(plant)
 
 def addModule(module):
@@ -29,8 +26,9 @@ def addModule(module):
 async def delayedUpdate():
     while True:
         for module in modules.values():
-            module.delayedUpdate()
-        await asyncio.sleep(UPDATE_INTERVAL)
+            await module.delayedUpdate()
+        # await asyncio.sleep(UPDATE_INTERVAL)
+        await asyncio.sleep(10)
 
 @client.event
 async def on_ready():
@@ -39,7 +37,6 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    print(message.author.id)
     # Avoid responding to own messages
     if message.author == client.user:
         return
@@ -50,12 +47,10 @@ async def on_message(message):
     if message.content[0] == "$":
         tokens = message.content.split(" ")
         head = tokens[0][1:]
-        if head == "signup" or head == "register":
-            interface.registerUser(util.getMessageAuthorID(message))
         if head == "help" or head == "command":
             await message.channel.send("Check out a list of helpful commands here! https://github.com/ianw3214/Beepbop")
         if head in modules:
-            modules[head].handleMessageCommand(message, tokens[1:])
+            await modules[head].handleMessageCommand(message, tokens[1:])
 
 initModules()
 client.run(app.settings.getDiscordBotToken())

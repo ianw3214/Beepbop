@@ -6,12 +6,12 @@ import datetime
 import dateutil
 
 class PlantModule(app.module.Module):
-    def __init__(self):
-        app.module.Module.__init__(self, "plant")
+    def __init__(self, client):
+        app.module.Module.__init__(self, client, "plant")
         self.plants = {}
         self._registerMessageCommand("add", self.addPlant)
 
-    def delayedUpdate(self):
+    async def delayedUpdate(self):
         currTime = datetime.datetime.now()
         for user in self.plants:
             for plant in self.plants[user]:
@@ -20,12 +20,12 @@ class PlantModule(app.module.Module):
                 delta = datetime.timedelta(days=plantData["daysToWater"])
                 needsWater = lastTime + delta
                 if currTime > needsWater:
-                    # TODO: Send a message to the channel
                     message = "Plant {} needs to be watered!".format(plant)
                     util.logger.log("plant", message)
+                    await self._sendMessage(message)
 
     # COMMAND: $plant add <name> <days-to-water>
-    def addPlant(self, rawMessage, tokens):
+    async def addPlant(self, rawMessage, tokens):
         user = rawMessage.author.id
         if len(tokens) < 2:
             # TODO: Error handling
@@ -47,4 +47,4 @@ class PlantModule(app.module.Module):
         return str(date)
     
     def _strToDate(self, string):
-        return dateutilparser.parse(string)
+        return dateutil.parser.parse(string)
