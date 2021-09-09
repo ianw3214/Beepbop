@@ -22,7 +22,8 @@ class PlantModule(app.module.Module):
                 if currTime > needsWater:
                     message = "Plant {} needs to be watered!".format(plant)
                     util.logger.log("plant", message)
-                    await self._sendMessage(message)
+                    msgObj = await self._sendMessage(message)
+                    self._registerReactListener(msgObj, self.waterMessageReact)
 
     # COMMAND: $plant add <name> <days-to-water>
     async def addPlant(self, rawMessage, tokens):
@@ -42,7 +43,10 @@ class PlantModule(app.module.Module):
         self.plants[user][plantName] = plantData
         message = "Added plant {} for user {}".format(plantName, user)
         util.logger.log("plant", message)
-        
+
+    async def waterMessageReact(self, reaction, user):
+        print("Reacted!!!")
+
     def _dateToStr(self, date):
         return str(date)
     

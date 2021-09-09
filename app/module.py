@@ -8,6 +8,7 @@ class Module:
         self.prefix = prefix
         self.channel = channel
         self.messageCommands = {}
+        self.reactListeners = {}
         self.client = client
     
     def getPrefix(self):
@@ -21,6 +22,13 @@ class Module:
         if head in self.messageCommands:
             await self.messageCommands[head](rawMessage, tokens[1:])
 
+    async def handleReactionAdd(self, reaction, user):
+        messageID = reaction.message.id
+        if messageID in self.reactListeners:
+            remove = await self.reactListeners[messageID](reaction, user)
+            if remove:
+                del self.reactListeners[messageID]
+
     async def delayedUpdate(self):
         pass
 
@@ -30,4 +38,8 @@ class Module:
         self.messageCommands[command] = func
 
     async def _sendMessage(self, message):
-        await self.client.get_channel(DEFAULT_CHANNEL_ID).send(message)
+        return await self.client.get_channel(DEFAULT_CHANNEL_ID).send(message)
+
+    # TODO: Specify emoji react to listen for
+    def _registerReactListener(self, message, callback):
+        self.reactListeners[message.id] = callback

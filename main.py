@@ -27,8 +27,7 @@ async def delayedUpdate():
     while True:
         for module in modules.values():
             await module.delayedUpdate()
-        # await asyncio.sleep(UPDATE_INTERVAL)
-        await asyncio.sleep(10)
+        await asyncio.sleep(UPDATE_INTERVAL)
 
 @client.event
 async def on_ready():
@@ -51,6 +50,12 @@ async def on_message(message):
             await message.channel.send("Check out a list of helpful commands here! https://github.com/ianw3214/Beepbop")
         if head in modules:
             await modules[head].handleMessageCommand(message, tokens[1:])
+
+@client.event
+async def on_reaction_add(reaction, user):
+    # TODO: Make this global to avoid looping through every module
+    for module in modules.values():
+        await module.handleReactionAdd(reaction, user)
 
 initModules()
 client.run(app.settings.getDiscordBotToken())
