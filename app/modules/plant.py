@@ -20,7 +20,7 @@ class PlantModule(app.module.Module):
                 delta = datetime.timedelta(days=plantData["daysToWater"])
                 needsWater = lastTime + delta
                 if currTime > needsWater:
-                    message = "Plant {} needs to be watered!".format(plant)
+                    message = "<@{}> Plant {} needs to be watered!".format(user, plant)
                     util.logger.log("plant", message)
                     msgObj = await self._sendMessage(message)
                     self._registerReactListener(msgObj, self.waterMessageReact)
@@ -41,7 +41,8 @@ class PlantModule(app.module.Module):
             "lastWatered" : datetime.datetime.now()
         }
         self.plants[user][plantName] = plantData
-        message = "Added plant {} for user {}".format(plantName, user)
+        message = "Added plant {} for user <@{}>".format(plantName, user)
+        self._sendMessage(message)
         util.logger.log("plant", message)
 
     async def waterMessageReact(self, reaction, user):
