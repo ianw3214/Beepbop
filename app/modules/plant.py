@@ -20,10 +20,12 @@ class PlantModule(app.module.Module):
                 delta = datetime.timedelta(days=plantData["daysToWater"])
                 needsWater = lastTime + delta
                 if currTime > needsWater:
-                    message = "<@{}> Plant {} needs to be watered!".format(user, plant)
+                    message = "<@{}> Plant {} needs to be watered!\nReact to this message once you've watered your plant :)".format(user, plant)
                     util.logger.log("plant", message)
                     msgObj = await self._sendMessage(message)
                     self._registerReactListener(msgObj, self.waterMessageReact)
+                    plantData["messageID"] = msgObj.id
+
 
     # COMMAND: $plant add <name> <days-to-water>
     async def addPlant(self, rawMessage, tokens):
@@ -42,11 +44,18 @@ class PlantModule(app.module.Module):
         }
         self.plants[user][plantName] = plantData
         message = "Added plant {} for user <@{}>".format(plantName, user)
-        self._sendMessage(message)
+        await self._sendMessage(message)
         util.logger.log("plant", message)
 
     async def waterMessageReact(self, reaction, user):
-        print("Reacted!!!")
+        for user in self.plants:
+            for plant in self.plants[user]:
+                plantData = self.plants[user][plant]
+                if "messageID" in plantData and plantData["messageID"] == reaction.message.id:
+                    plantData["lastWatered"] = datetime.datetime.now()
+                    message = "<@{}> {} has been watered, updating last watered time!".format(user, plant)
+                    await self._sendMessage(message)
+                    util.logger.log("plant", message)
 
     def _dateToStr(self, date):
         return str(date)
