@@ -1,3 +1,4 @@
+import os
 import json
 
 SETTINGS_PATH = "settings.json"
@@ -7,9 +8,14 @@ def getFileData():
     return json.load(rawData)
 
 def getDiscordBotToken():
-    data = getFileData()
-    return data["token"]
+    token = os.getenv('DISCORD_TOKEN')
+    if token is None:
+        data = getFileData()
+        token = data["token"]
+    return token
 
+# TODO: Get strava data from some database somewhere
+# needs to be updated so can't use environment variable
 def getStravaData():
     data = getFileData()
     return data["strava"]
