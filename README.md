@@ -1,5 +1,9 @@
 # Beepbop
 
+## Setup instructions
+
+Setup instructions can be found [here](docs/setup.md)
+
 ## Commands
 
 - `$signup` / `register`
