@@ -18,7 +18,9 @@ class Module:
         return self.channel
     
     async def handleMessageCommand(self, rawMessage, tokens):
-        head = tokens[0]
+        head = ""
+        if len(tokens) > 0:
+            head = tokens[0]
         if head in self.messageCommands:
             await self.messageCommands[head](rawMessage, tokens[1:])
 
