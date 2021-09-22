@@ -4,6 +4,7 @@ import discord
 import app.settings
 import app.modules.strava
 import app.modules.plant
+import app.modules.coin
 
 import util.logger
 
@@ -19,6 +20,8 @@ def initModules():
     addModule(strava)
     plant = app.modules.plant.PlantModule(client)
     addModule(plant)
+    coin = app.modules.coin.CoinModule(client)
+    addModule(coin)
 
 def addModule(module):
     modules[module.getPrefix()] = module
