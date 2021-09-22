@@ -26,7 +26,7 @@ def getChannelID():
     if channelID is None:
         data = getFileData()
         channelID = data["channelID"]
-    return channelID
+    return int(channelID)
 
 # TODO: Get strava data from some database somewhere
 # needs to be updated so can't use environment variable
