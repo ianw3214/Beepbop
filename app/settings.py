@@ -14,6 +14,20 @@ def getDiscordBotToken():
         token = data["token"]
     return token
 
+def getChannel():
+    channel = os.getenv('CHANNEL')
+    if channel is None:
+        data = getFileData()
+        channel = data["channel"]
+    return channel
+
+def getChannelID():
+    channelID = os.getenv('CHANNELID')
+    if channelID is None:
+        data = getFileData()
+        channelID = data["channelID"]
+    return channelID
+
 # TODO: Get strava data from some database somewhere
 # needs to be updated so can't use environment variable
 def getStravaData():

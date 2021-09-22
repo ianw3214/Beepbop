@@ -1,12 +1,12 @@
-DEFAULT_CHANNEL = "beepboop"
-DEFAULT_CHANNEL_ID = 884636204866347048
+import app.settings
 
 # Use prefix instead of channel to differentiate models for now
 # TODO: Use thread channels instead when the API is updated
 class Module:
-    def __init__(self, client, prefix, channel=DEFAULT_CHANNEL):
+    def __init__(self, client, prefix):
         self.prefix = prefix
-        self.channel = channel
+        self.channel = app.settings.getChannel()
+        self.channelID = app.settings.getChannelID()
         self.messageCommands = {}
         self.reactListeners = {}
         self.client = client
@@ -40,7 +40,7 @@ class Module:
         self.messageCommands[command] = func
 
     async def _sendMessage(self, message):
-        return await self.client.get_channel(DEFAULT_CHANNEL_ID).send(message)
+        return await self.client.get_channel(self.channelID).send(message)
 
     # TODO: Specify emoji react to listen for
     def _registerReactListener(self, message, callback):

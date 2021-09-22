@@ -52,11 +52,15 @@ Now, create a new file called **settings.json** in the root folder of the reposi
 
 ```json
 {
-    "token": "<YOUR-DISCORD-BOT-TOKEN-HERE>"
+    "token": "<YOUR-DISCORD-BOT-TOKEN-HERE>",
+    "channel" : "<YOUR-CHANNEL-NAME-HERE>",
+    "channelID" : "<YOUR-CHANNEL-ID-HERE>"
 }
 ```
 
 Now, if you run the **main.py** file in your terminal, everything should work properly. If you see the bot online on your discord server, then it menas everything is running properly!
+
+*Note:* To find you discord channel ID, enable developer mode in settings -> advanced, then right click your channel and click *copy ID*.
 
 > py main.py
 
