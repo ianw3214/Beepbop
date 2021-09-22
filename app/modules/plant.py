@@ -53,7 +53,7 @@ class PlantModule(app.module.Module):
     async def showStats(self, rawMessage, tokens):
         user = rawMessage.author.id
         if user not in self.plants or len(self.plants[user]) == 0:
-            message = "<@{}> has no plants, sadge :(".format(user)
+            await self._sendMessage("<@{}> has no plants, sadge :(".format(user))
         else:
             message = "<@{}> here are your plants!\n".format(user)
             for plant in self.plants[user]:
