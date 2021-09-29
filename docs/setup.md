@@ -36,6 +36,20 @@ Your bot should now be added to your server, and we are ready to set up the actu
 
 ![bot in server](bot_in_server.png)
 
+## Setting up the database instance
+
+For this project, we are using [mongoDB](https://www.mongodb.com/) for our database solution. Head to [mongoDB atlas](https://www.mongodb.com/cloud/atlas) and set up an account as well as a new database instance. This should all be a fairly straighforward setup process, please open an issue on this github repo if you run into any issues so we can update the documentation accordingly.
+
+Make sure you remember the password you set for the first user that is created. This will be used later to actually access the database from our code.
+
+Once your database instance is setup, click the connect button and select *Connect your Application*. 
+
+![database connection](mongo1.png)
+
+On the next prompt, select Python as your driver with version 3.6 or later. Then, copy the part of the url that comes after the `<password>` and save it for later.
+
+![url postfix](mongo2.png)
+
 ## Setting up the code environment
 
 This project uses python so make sure you have python 3 installed! You can download python [here](https://www.python.org/)
@@ -54,7 +68,12 @@ Now, create a new file called **settings.json** in the root folder of the reposi
 {
     "token": "<YOUR-DISCORD-BOT-TOKEN-HERE>",
     "channel" : "<YOUR-CHANNEL-NAME-HERE>",
-    "channelID" : "<YOUR-CHANNEL-ID-HERE>"
+    "channelID" : "<YOUR-CHANNEL-ID-HERE>",
+    // copied from earlier mongoDB atlas setup
+    "mongoDB": {
+        "password" : "<YOUR-MONGODB-USER-PASSWORD>",
+        "postfix" : "<YOUR-MONGODB-URL-POSTFIX>"
+    },
 }
 ```
 

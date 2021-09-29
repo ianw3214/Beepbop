@@ -28,6 +28,20 @@ def getChannelID():
         channelID = data["channelID"]
     return int(channelID)
 
+def getMongoDBPassword():
+    password = os.getenv('MONGO_PASSWORD')
+    if password is None:
+        data = getFileData()
+        password = data["mongoDB"]["password"]
+    return password
+
+def getMongoDBUrl():
+    url = os.getenv('MONGO_URL')
+    if url  is None:
+        data = getFileData()
+        url  = data["mongoDB"]["url"]
+    return url 
+
 # TODO: Get strava data from some database somewhere
 # needs to be updated so can't use environment variable
 def getStravaData():
