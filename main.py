@@ -45,8 +45,9 @@ async def on_message(message):
     # only listen to our dedicated channel
     if message.channel.name != CHANNEL:
         return
+    util.logger.log("core", "message recieved: " + message.content)
     # handle bot commands
-    if message.content[0] == "$":
+    if len(message.content) > 0 and message.content[0] == "$":
         tokens = message.content.split(" ")
         head = tokens[0][1:]
         if head == "help" or head == "command":
