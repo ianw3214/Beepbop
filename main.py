@@ -22,6 +22,8 @@ def initModules():
     addModule(plant)
     coin = app.modules.coin.CoinModule(client)
     addModule(coin)
+    crystal = app.modules.crystal.CrystalModule(client)
+    addModule(crystal)
 
 def addModule(module):
     modules[module.getPrefix()] = module
