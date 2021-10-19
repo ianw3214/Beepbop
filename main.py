@@ -5,6 +5,7 @@ import app.settings
 import app.modules.strava
 import app.modules.plant
 import app.modules.coin
+import app.modules.crystal
 
 import util.logger
 
