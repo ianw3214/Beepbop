@@ -17,5 +17,9 @@ def getDatabase(databaseName):
 def getCollection(databaseName, collectionName):
     return getDatabase(databaseName)[collectionName]
 
-def insertToCollection(collectionObj, insertData):
+def getDocument(databaseName, collectionName, id):
+    return getDatabase(databaseName)[collectionName].find_one(id)
+
+def insertToCollection(collectionObj, insertData, id):
+    insertData["_id"] = id
     return collectionObj.insert_one(insertData)

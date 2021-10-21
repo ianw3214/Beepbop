@@ -8,7 +8,7 @@ class Module:
         self.channel = app.settings.getChannel()
         self.channelID = app.settings.getChannelID()
         self.messageCommands = {}
-        self.reactListeners = {}
+        self.reactListeners = []
         self.client = client
         self.defaultMessageHandler = defaultMessageHandler
 
@@ -27,12 +27,10 @@ class Module:
         elif self.defaultMessageHandler:
             await self.defaultMessageHandler(rawMessage, tokens)
 
-    async def handleReactionAdd(self, reaction, user):
-        messageID = reaction.message.id
-        if messageID in self.reactListeners:
-            remove = await self.reactListeners[messageID](reaction, user)
-            if remove:
-                del self.reactListeners[messageID]
+    async def handleReactionAdd(self, emoji, message, user):
+        print(self.reactListeners)
+        for listener in self.reactListeners:
+            await listener(emoji, message, user)
 
     async def delayedUpdate(self):
         pass
@@ -46,5 +44,6 @@ class Module:
         return await self.client.get_channel(self.channelID).send(message)
 
     # TODO: Specify emoji react to listen for
-    def _registerReactListener(self, message, callback):
-        self.reactListeners[message.id] = callback
+    # TODO: Specify messages for each listener to listen for to avoid searching
+    def _registerReactListener(self, callback):
+        self.reactListeners.append(callback)

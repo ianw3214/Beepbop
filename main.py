@@ -59,10 +59,10 @@ async def on_message(message):
             await modules[head].handleMessageCommand(message, tokens[1:])
 
 @client.event
-async def on_reaction_add(reaction, user):
+async def on_raw_reaction_add(payload):
     # TODO: Make this global to avoid looping through every module
     for module in modules.values():
-        await module.handleReactionAdd(reaction, user)
+        await module.handleReactionAdd(payload.emoji, payload.message_id, payload.user_id)
 
 initModules()
 client.run(app.settings.getDiscordBotToken())

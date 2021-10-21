@@ -1,5 +1,7 @@
 import app.module
 
+import app.database.database
+
 import util.logger
 
 import datetime
@@ -11,23 +13,30 @@ class PlantModule(app.module.Module):
         self.plants = {}
         self._registerMessageCommand("add", self.addPlant)
         self._registerMessageCommand("stats", self.showStats)
+        self._registerReactListener(self.waterMessageReact)
 
     async def delayedUpdate(self):
         currTime = datetime.datetime.now()
-        for user in self.plants:
-            for plant in self.plants[user]:
-                plantData = self.plants[user][plant]
+        collection = app.database.database.getCollection("plant", "userdata")
+        cursor = collection.find()
+        for userDocument in cursor:
+            userid = userDocument["_id"]
+            dirty = False
+            for plant in userDocument["plants"]:
+                plantData = userDocument["plants"][plant]
                 lastTime = plantData["lastWatered"]
                 delta = datetime.timedelta(days=plantData["daysToWater"])
                 needsWater = lastTime + delta
                 if currTime > needsWater:
                     # If message is already sent, don't send again
                     if "messageID" not in plantData:
-                        message = "<@{}> Plant {} needs to be watered!\nReact to this message once you've watered your plant :)".format(user, plant)
+                        message = "<@{}> Plant {} needs to be watered!\nReact to this message once you've watered your plant :)".format(userid, plant)
                         util.logger.log("plant", message)
                         msgObj = await self._sendMessage(message)
-                        self._registerReactListener(msgObj, self.waterMessageReact)
                         plantData["messageID"] = msgObj.id
+                        dirty = True
+            if dirty:
+                collection.replace_one({"_id":userid}, userDocument)
 
 
     # COMMAND: $plant add <name> <days-to-water>
@@ -39,25 +48,31 @@ class PlantModule(app.module.Module):
         # TODO: Token validation
         plantName = tokens[0]
         daysToWater = tokens[1]
-        if user not in self.plants:
-            self.plants[user] = {}
         plantData = {
             "daysToWater" : int(daysToWater),
             "lastWatered" : datetime.datetime.now()
         }
-        self.plants[user][plantName] = plantData
+        # Add new plant data to database
+        collection = app.database.database.getCollection("plant", "userdata")
+        userData = app.database.database.getDocument("plant", "userdata", user)
+        if userData is None:
+            userData = { "plants" : {} }
+        userData["plants"][plantName] = plantData
+        app.database.database.insertToCollection(collection, userData, user)
+        # User feedback and logging
         message = "Added plant {} for user <@{}>".format(plantName, user)
         await self._sendMessage(message)
         util.logger.log("plant", message)
 
     async def showStats(self, rawMessage, tokens):
         user = rawMessage.author.id
-        if user not in self.plants or len(self.plants[user]) == 0:
+        userData = app.database.database.getDocument("plant", "userdata", user)
+        if userData is None or len(userData["plants"]) == 0:
             await self._sendMessage("<@{}> has no plants, sadge :(".format(user))
         else:
             message = "<@{}> here are your plants!\n".format(user)
-            for plant in self.plants[user]:
-                plantData = self.plants[user][plant]
+            for plant in userData["plants"]:
+                plantData = userData["plants"][plant]
                 message += "**{}:** last watered on {} (every {} days)".format(
                     plant,
                     plantData["lastWatered"].strftime("%m/%d/%Y, %H:%M:%S"),
@@ -66,16 +81,20 @@ class PlantModule(app.module.Module):
             await self._sendMessage(message)
 
 
-    async def waterMessageReact(self, reaction, user):
-        for userID in self.plants:
-            for plant in self.plants[userID]:
-                plantData = self.plants[userID][plant]
-                if "messageID" in plantData and plantData["messageID"] == reaction.message.id:
-                    plantData["lastWatered"] = datetime.datetime.now()
-                    message = "<@{}> {} has been watered, updating last watered time!".format(userID, plant)
-                    await self._sendMessage(message)
-                    util.logger.log("plant", message)
-                    del plantData["messageID"]
+    async def waterMessageReact(self, emoji, message, user):
+        userData = app.database.database.getDocument("plant", "userdata", user)
+        print(message)
+        for plant in userData["plants"]:
+            plantData = userData["plants"][plant]
+            print(plantData)
+            if "messageID" in plantData and plantData["messageID"] == message:
+                plantData["lastWatered"] = datetime.datetime.now()
+                message = "<@{}> {} has been watered, updating last watered time!".format(user, plant)
+                await self._sendMessage(message)
+                util.logger.log("plant", message)
+                del plantData["messageID"]
+        collection = app.database.database.getCollection("plant", "userdata")
+        collection.replace_one({"_id": user}, userData)
 
     def _dateToStr(self, date):
         return str(date)
