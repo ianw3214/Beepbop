@@ -3,26 +3,29 @@ import app.settings
 # Use prefix instead of channel to differentiate models for now
 # TODO: Use thread channels instead when the API is updated
 class Module:
-    def __init__(self, client, prefix):
+    def __init__(self, client, prefix, defaultMessageHandler=None):
         self.prefix = prefix
         self.channel = app.settings.getChannel()
         self.channelID = app.settings.getChannelID()
         self.messageCommands = {}
         self.reactListeners = {}
         self.client = client
-    
+        self.defaultMessageHandler = defaultMessageHandler
+
     def getPrefix(self):
         return self.prefix
 
     def getChannel(self):
         return self.channel
-    
+
     async def handleMessageCommand(self, rawMessage, tokens):
         head = ""
         if len(tokens) > 0:
             head = tokens[0]
         if head in self.messageCommands:
             await self.messageCommands[head](rawMessage, tokens[1:])
+        elif self.defaultMessageHandler:
+            await self.defaultMessageHandler(rawMessage, tokens)
 
     async def handleReactionAdd(self, reaction, user):
         messageID = reaction.message.id
