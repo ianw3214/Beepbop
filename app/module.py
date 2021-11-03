@@ -3,14 +3,16 @@ import app.settings
 # Use prefix instead of channel to differentiate models for now
 # TODO: Use thread channels instead when the API is updated
 class Module:
-    def __init__(self, client, prefix, defaultMessageHandler=None):
+    def __init__(self, client, eventQueue, prefix, defaultMessageHandler=None):
         self.prefix = prefix
         self.channel = app.settings.getChannel()
         self.channelID = app.settings.getChannelID()
         self.messageCommands = {}
         self.reactListeners = []
         self.client = client
+        self.eventQueue = eventQueue
         self.defaultMessageHandler = defaultMessageHandler
+        self.eventHandlers = {}
 
     def getPrefix(self):
         return self.prefix
@@ -28,7 +30,6 @@ class Module:
             await self.defaultMessageHandler(rawMessage, tokens)
 
     async def handleReactionAdd(self, emoji, message, user):
-        print(self.reactListeners)
         for listener in self.reactListeners:
             await listener(emoji, message, user)
 
@@ -40,6 +41,11 @@ class Module:
             raise Exception("{} is already a command".format(command))
         self.messageCommands[command] = func
 
+    def _registerEventHandler(self, eventType, func):
+        if eventType in self.eventHandlers:
+            raise Exception("Event '{}' is already handled".format(eventType))
+        self.eventHandlers[eventType] = func
+
     async def _sendMessage(self, message):
         return await self.client.get_channel(self.channelID).send(message)
 
@@ -47,3 +53,13 @@ class Module:
     # TODO: Specify messages for each listener to listen for to avoid searching
     def _registerReactListener(self, callback):
         self.reactListeners.append(callback)
+
+    def _postEvent(self, eventType, eventData):
+        self.eventQueue.append({
+            "type" : eventType,
+            "data" : eventData
+        })
+
+    async def _handleEvent(self, eventType, eventData):
+        if eventType in self.eventHandlers:
+            await self.eventHandlers[eventType](eventData)

@@ -4,8 +4,8 @@ import math
 
 
 class CrystalModule(app.module.Module):
-    def __init__(self, client):
-        app.module.Module.__init__(self, client, "crystal", self.calculate)
+    def __init__(self, client, eventQueue):
+        app.module.Module.__init__(self, client, eventQueue, "crystal", self.calculate)
 
     async def calculate(self, rawMessage, tokens):
         if len(tokens) == 1 and tokens[0].isnumeric() and int(tokens[0]) > 0:

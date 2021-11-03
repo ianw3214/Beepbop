@@ -10,8 +10,8 @@ TOKEN_REFRESH_ENDPOINT="https://www.strava.com/api/v3/oauth/token"
 CLUB_ACTIVITIES_ENDPOINT="https://www.strava.com/api/v3/clubs/978192/activities"
 
 class StravaModule(app.module.Module):
-    def __init__(self, client):
-        app.module.Module.__init__(self, client, "strava")
+    def __init__(self, client, eventQueue):
+        app.module.Module.__init__(self, client, eventQueue, "strava")
         # rawData = app.settings.getStravaData()
         # self.clientID = rawData["clientID"]
         # self.clientSecret = rawData["clientSecret"]

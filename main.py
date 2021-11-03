@@ -11,28 +11,37 @@ import util.logger
 
 CHANNEL = "beepbop"
 CHANNEL_ID = 884636204866347048
-UPDATE_INTERVAL = 60 * 60
+# TODO: Let this be set by environment variable?
+UPDATE_INTERVAL = 60 * 60 * 3
 
 client = discord.Client()
 modules = {}
+eventQueue = []
 
 def initModules():
-    strava = app.modules.strava.StravaModule(client)
+    strava = app.modules.strava.StravaModule(client, eventQueue)
     addModule(strava)
-    plant = app.modules.plant.PlantModule(client)
+    plant = app.modules.plant.PlantModule(client, eventQueue)
     addModule(plant)
-    coin = app.modules.coin.CoinModule(client)
+    coin = app.modules.coin.CoinModule(client, eventQueue)
     addModule(coin)
-    crystal = app.modules.crystal.CrystalModule(client)
+    crystal = app.modules.crystal.CrystalModule(client, eventQueue)
     addModule(crystal)
 
 def addModule(module):
     modules[module.getPrefix()] = module
 
+async def flushEvents():
+    for event in eventQueue:
+        for module in modules.values():
+            await module._handleEvent(event["type"], event["data"])
+    eventQueue.clear()
+
 async def delayedUpdate():
     while True:
         for module in modules.values():
             await module.delayedUpdate()
+        await flushEvents()
         await asyncio.sleep(UPDATE_INTERVAL)
 
 @client.event
@@ -57,12 +66,14 @@ async def on_message(message):
             await message.channel.send("Check out a list of helpful commands here! https://github.com/ianw3214/Beepbop")
         if head in modules:
             await modules[head].handleMessageCommand(message, tokens[1:])
+    await flushEvents()
 
 @client.event
 async def on_raw_reaction_add(payload):
     # TODO: Make this global to avoid looping through every module
     for module in modules.values():
         await module.handleReactionAdd(payload.emoji, payload.message_id, payload.user_id)
+    await flushEvents()
 
 initModules()
 client.run(app.settings.getDiscordBotToken())

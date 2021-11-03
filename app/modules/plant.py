@@ -8,8 +8,8 @@ import datetime
 import dateutil
 
 class PlantModule(app.module.Module):
-    def __init__(self, client):
-        app.module.Module.__init__(self, client, "plant")
+    def __init__(self, client, eventQueue):
+        app.module.Module.__init__(self, client, eventQueue, "plant")
         self.plants = {}
         self._registerMessageCommand("add", self.addPlant)
         self._registerMessageCommand("stats", self.showStats)
@@ -56,9 +56,11 @@ class PlantModule(app.module.Module):
         collection = app.database.database.getCollection("plant", "userdata")
         userData = app.database.database.getDocument("plant", "userdata", user)
         if userData is None:
-            userData = { "plants" : {} }
-        userData["plants"][plantName] = plantData
-        app.database.database.insertToCollection(collection, userData, user)
+            userData = { "plants" : { plantName : plantData} }
+            app.database.database.insertToCollection(collection, userData, user)
+        else:
+            userData["plants"][plantName] = plantData
+            collection.replace_one({"_id" : user}, userData)
         # User feedback and logging
         message = "Added plant {} for user <@{}>".format(plantName, user)
         await self._sendMessage(message)
@@ -83,10 +85,8 @@ class PlantModule(app.module.Module):
 
     async def waterMessageReact(self, emoji, message, user):
         userData = app.database.database.getDocument("plant", "userdata", user)
-        print(message)
         for plant in userData["plants"]:
             plantData = userData["plants"][plant]
-            print(plantData)
             if "messageID" in plantData and plantData["messageID"] == message:
                 plantData["lastWatered"] = datetime.datetime.now()
                 message = "<@{}> {} has been watered, updating last watered time!".format(user, plant)
@@ -95,6 +95,8 @@ class PlantModule(app.module.Module):
                 del plantData["messageID"]
         collection = app.database.database.getCollection("plant", "userdata")
         collection.replace_one({"_id": user}, userData)
+        # Give the user coins for watering plants
+        self._postEvent("earn_coin", { "amount" : 3 , "userID" : user})
 
     def _dateToStr(self, date):
         return str(date)
