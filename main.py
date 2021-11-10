@@ -6,6 +6,7 @@ import app.modules.strava
 import app.modules.plant
 import app.modules.coin
 import app.modules.crystal
+import app.modules.gamble
 
 import util.logger
 
@@ -27,6 +28,8 @@ def initModules():
     addModule(coin)
     crystal = app.modules.crystal.CrystalModule(client, eventQueue)
     addModule(crystal)
+    gamble = app.modules.gamble.GambleModule(client, eventQueue)
+    addModule(gamble)
 
 def addModule(module):
     modules[module.getPrefix()] = module
