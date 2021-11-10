@@ -6,7 +6,7 @@ import util.logger
 
 class CoinModule(app.module.Module):
     def __init__(self, client, eventQueue):
-        app.module.Module.__init__(self, client, eventQueue, "coin")
+        app.module.Module.__init__(self, client, eventQueue, "coin", self.showStats)
         self._registerMessageCommand("stats", self.showStats)
         self._registerEventHandler("earn_coin", self.earnCoin)
 
