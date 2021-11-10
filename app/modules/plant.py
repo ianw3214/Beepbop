@@ -43,11 +43,18 @@ class PlantModule(app.module.Module):
     async def addPlant(self, rawMessage, tokens):
         user = rawMessage.author.id
         if len(tokens) < 2:
-            # TODO: Error handling
+            message = "Incorrect format for add plant command\n"
+            message += "> $plant add 'plant-name' 'water-interval-in-days'"
+            await self._sendMessage(message)
+            util.logger.log("plant", message)
             return
-        # TODO: Token validation
         plantName = tokens[0]
         daysToWater = tokens[1]
+        if not daysToWater.isnumeric():
+            message = "Please use a number to specify the interval (days) to water the plant"
+            await self._sendMessage(message)
+            util.logger.log("plant", message)
+            return
         plantData = {
             "daysToWater" : int(daysToWater),
             "lastWatered" : datetime.datetime.now()

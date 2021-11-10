@@ -32,7 +32,12 @@ class CoinModule(app.module.Module):
             await self._sendMessage(message)
 
     async def earnCoin(self, data):
-        # TODO: Data validation
+        if data["userID"] is None:
+            util.logger.log("coin", "Invalid input data for earnCoin, missing userID")
+            return
+        if data["amount"] is None:
+            util.logger.log("coin", "Invalid input data for earnCoin, missing amount")
+            return
         collection = app.database.database.getCollection("coin", "userdata")
         userData = app.database.database.getDocument("coin", "userdata", data["userID"])
         if userData is None:
