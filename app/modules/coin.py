@@ -8,6 +8,7 @@ class CoinModule(app.module.Module):
     def __init__(self, client, eventQueue):
         app.module.Module.__init__(self, client, eventQueue, "coin", self.showStats)
         self._registerMessageCommand("stats", self.showStats)
+        self._registerMessageCommand("leaderboard", self.showLeaderboard)
         self._registerEventHandler("earn_coin", self.earnCoin)
 
     async def delayedUpdate(self):
@@ -30,6 +31,22 @@ class CoinModule(app.module.Module):
         else:
             message = "<@{}> has {} coins!\n".format(user, userData["amount"])
             await self._sendMessage(message)
+
+    async def showLeaderboard(self, rawMessage, tokens):
+        # TODO: Cache leaderboard so that we don't have to retrieve from database everytime
+        collection = app.database.database.getCollection("coin", "userdata")
+        cursor = collection.find()
+        pairs = []
+        for userDocument in cursor:
+            userid = userDocument["_id"]
+            amount = userDocument["amount"]
+            pairs.append((userid, amount))
+        pairs.sort(key=lambda x : x[1])
+        message = "**Coin Leaderboard\n**"
+        for pair in pairs:
+            message = message + "<@{}> : {} coins\n".format(pair[0], pair[1])
+        await self._sendMessage(message)
+        util.logger.log("coin", "Showing leaderboard info...")
 
     async def earnCoin(self, data):
         if data["userID"] is None:
