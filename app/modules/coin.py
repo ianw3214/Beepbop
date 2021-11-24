@@ -1,8 +1,12 @@
+from pymongo import collection
 import app.module
 
 import app.database.database
 
 import util.logger
+
+import datetime
+import dateutil
 
 class CoinModule(app.module.Module):
     def __init__(self, client, eventQueue):
@@ -12,16 +16,22 @@ class CoinModule(app.module.Module):
         self._registerEventHandler("earn_coin", self.earnCoin)
 
     async def delayedUpdate(self):
-        pass
-
-    # def takeCoinFromUser(self, userID, numCoins):
-    #     if userID not in self.coins:
-    #         return False
-    #     if self.coins[userID] < numCoins:
-    #         return False
-    #     self.coins[userID] = self.coins[userID] - numCoins
-    #     util.logger.log("coin", "Took {} coins from user{}".format(numCoins, userID))
-    #     return True
+        currTime = datetime.datetime.now()
+        WEEK_DELTA = datetime.timedelta(weeks=1)
+        collection = app.database.database.getCollection("coin", "rootdata")
+        rootData = app.database.database.getDocument("coin", "rootdata", 0)
+        if rootData is None:
+            await self.showLeaderboard()
+            rootData = {
+                "nextLeaderboard" : currTime + WEEK_DELTA
+            }
+            app.database.database.insertToCollection(collection, rootData, 0)
+        else:
+            nextUpdate = rootData["nextLeaderboard"]
+            if currTime > nextUpdate:
+                await self.showLeaderboard()
+                rootData["nextLeaderboard"] = currTime + WEEK_DELTA
+                collection.replace_one({"_id":0}, rootData)
 
     async def showStats(self, rawMessage, tokens):
         user = rawMessage.author.id
@@ -32,7 +42,7 @@ class CoinModule(app.module.Module):
             message = "<@{}> has {} coins!\n".format(user, userData["amount"])
             await self._sendMessage(message)
 
-    async def showLeaderboard(self, rawMessage, tokens):
+    async def showLeaderboard(self, *_):
         # TODO: Cache leaderboard so that we don't have to retrieve from database everytime
         collection = app.database.database.getCollection("coin", "userdata")
         cursor = collection.find()
@@ -41,8 +51,9 @@ class CoinModule(app.module.Module):
             userid = userDocument["_id"]
             amount = userDocument["amount"]
             pairs.append((userid, amount))
-        pairs.sort(key=lambda x : x[1])
+        pairs.sort(key=lambda x : x[1], reverse=True)
         message = "**Coin Leaderboard\n**"
+        # TODO: Limit the number of people that show up on the leaderboard
         for pair in pairs:
             message = message + "<@{}> : {} coins\n".format(pair[0], pair[1])
         await self._sendMessage(message)

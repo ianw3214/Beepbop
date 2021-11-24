@@ -25,6 +25,7 @@ class PlantModule(app.module.Module):
             for plant in userDocument["plants"]:
                 plantData = userDocument["plants"][plant]
                 lastTime = plantData["lastWatered"]
+                # TODO: Save the next water time instead of calculating every time
                 delta = datetime.timedelta(days=plantData["daysToWater"])
                 needsWater = lastTime + delta
                 if currTime > needsWater:
