@@ -27,8 +27,10 @@ class SleepModule(app.module.Module):
         for userDocument in cursor:
             userid = userDocument["_id"]
             dirty = False
-            # TODO: Error handling
             memberData = discordClient.get_guild(GUILD_ID).get_member(userid)
+            if not memberData:
+                util.logger.log("sleep", "Could not find discord member {}".format(userid))
+                continue
             status = memberData.status
             # Module logic
             currDay = userDocument["currDay"]
