@@ -9,7 +9,7 @@ class GambleModule(app.module.Module):
     def __init__(self, client, eventQueue):
         app.module.Module.__init__(self, client, eventQueue, "gamble")
 
-    async def delayedUpdate(self):
+    async def delayedUpdate(self, discordClient):
         currTime = datetime.datetime.now()
         collection = app.database.database.getCollection("gamble", "games")
         cursor = collection.find()

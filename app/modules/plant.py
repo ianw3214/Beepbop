@@ -10,12 +10,11 @@ import dateutil
 class PlantModule(app.module.Module):
     def __init__(self, client, eventQueue):
         app.module.Module.__init__(self, client, eventQueue, "plant")
-        self.plants = {}
         self._registerMessageCommand("add", self.addPlant)
         self._registerMessageCommand("stats", self.showStats)
         self._registerReactListener(self.waterMessageReact)
 
-    async def delayedUpdate(self):
+    async def delayedUpdate(self, discordClient):
         currTime = datetime.datetime.now()
         collection = app.database.database.getCollection("plant", "userdata")
         cursor = collection.find()

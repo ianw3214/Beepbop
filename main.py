@@ -7,15 +7,20 @@ import app.modules.plant
 import app.modules.coin
 import app.modules.crystal
 import app.modules.gamble
+import app.modules.sleep
 
 import util.logger
 
 CHANNEL = "beepbop"
 CHANNEL_ID = 884636204866347048
+GUILD_ID = 714213228527484928
 # TODO: Let this be set by environment variable?
-UPDATE_INTERVAL = 60 * 60 * 3
+UPDATE_INTERVAL = 60 * 60 * 2
 
-client = discord.Client()
+intents = discord.Intents.default()
+intents.members = True
+
+client = discord.Client(intents=intents)
 modules = {}
 eventQueue = []
 
@@ -30,6 +35,8 @@ def initModules():
     addModule(crystal)
     gamble = app.modules.gamble.GambleModule(client, eventQueue)
     addModule(gamble)
+    sleep = app.modules.sleep.SleepModule(client, eventQueue)
+    addModule(sleep)
 
 def addModule(module):
     modules[module.getPrefix()] = module
@@ -43,7 +50,7 @@ async def flushEvents():
 async def delayedUpdate():
     while True:
         for module in modules.values():
-            await module.delayedUpdate()
+            await module.delayedUpdate(client)
         await flushEvents()
         await asyncio.sleep(UPDATE_INTERVAL)
 
