@@ -7,7 +7,8 @@ import app.database.database
 import util.logger
 
 import datetime
-import dateutil
+import pytz
+# import dateutil
 
 # THIS IS SUPER HARD CODED
 # DUPLICATED FROM main.py
@@ -15,13 +16,20 @@ import dateutil
 #   EVEN BETTER, JUST GET RID OF IT
 GUILD_ID = 714213228527484928
 
+# TODO: General way to handle time zones better?
+def getCurrTimePST():
+    currTime = datetime.datetime.now(tz=pytz.utc)
+    currTime = currTime.astimezone(pytz.timezone('US/Pacific'))
+    return currTime
+
 class SleepModule(app.module.Module):
     def __init__(self, client, eventQueue):
         app.module.Module.__init__(self, client, eventQueue, "sleep")
         self._registerMessageCommand("register", self.registerUser)
 
     async def delayedUpdate(self, discordClient):
-        currTime = datetime.datetime.now()
+        print(getCurrTimePST())
+        currTime = getCurrTimePST()
         collection = app.database.database.getCollection("sleep", "userdata")
         cursor = collection.find()
         for userDocument in cursor:
@@ -51,7 +59,7 @@ class SleepModule(app.module.Module):
                     self._postEvent("earn_coin", { "amount" : 3 , "userID" : userid})
                     setNewDay = True
                 if setNewDay:
-                    userDocument["currDay"] = datetime.datetime.now()
+                    userDocument["currDay"] = currTime
                     dirty = True
             if dirty:
                 collection.replace_one({"_id": userid}, userDocument)
@@ -64,7 +72,7 @@ class SleepModule(app.module.Module):
         userData = app.database.database.getDocument("sleep", "userdata", user)
         if userData is None:
             userData = {
-                "currDay" : datetime.datetime.now()
+                "currDay" : getCurrTimePST()
             }
             # TODO: Some sort of user feedback here too
             collection = app.database.database.getCollection("sleep", "userdata")
