@@ -26,6 +26,7 @@ class SleepModule(app.module.Module):
     def __init__(self, client, eventQueue):
         app.module.Module.__init__(self, client, eventQueue, "sleep")
         self._registerMessageCommand("register", self.registerUser)
+        self._registerMessageCommand("track", self.registerUser)
 
     async def delayedUpdate(self, discordClient):
         print(getCurrTimePST())
@@ -55,7 +56,7 @@ class SleepModule(app.module.Module):
                     message = "<@{}> Nice job sleeping before 12, have some coin!".format(userid)
                     util.logger.log("sleep", message)
                     await self._sendMessage(message)
-                    # Give the user coins for watering plants
+                    # Give the user coins for sleeping at a good time
                     self._postEvent("earn_coin", { "amount" : 3 , "userID" : userid})
                     setNewDay = True
                 if setNewDay:
@@ -74,7 +75,12 @@ class SleepModule(app.module.Module):
             userData = {
                 "currDay" : getCurrTimePST()
             }
-            # TODO: Some sort of user feedback here too
             collection = app.database.database.getCollection("sleep", "userdata")
             app.database.database.insertToCollection(collection, userData, user)
-            util.logger.log("sleep", "<@{}> registered for sleep module")
+            util.logger.log("sleep", "<@{}> registered for sleep module".format(user))
+            userMessage = "Now tracking <@{}>s sleep!",format(user)
+            await self._sendMessage(userMessage)
+        else:
+            message = "Already tracking <@{}>s sleep!",format(user)
+            await self._sendMessage(message)
+            util.logger.log("sleep", message)
