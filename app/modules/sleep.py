@@ -24,47 +24,55 @@ def getCurrTimePST():
 
 class SleepModule(app.module.Module):
     def __init__(self, client, eventQueue):
-        app.module.Module.__init__(self, client, eventQueue, "sleep")
+        app.module.Module.__init__(self, client, eventQueue, "sleep", anyMessageHandler=self.handleIncomingMessage)
         self._registerMessageCommand("register", self.registerUser)
         self._registerMessageCommand("track", self.registerUser)
 
-    async def delayedUpdate(self):
-        print(getCurrTimePST())
+    async def handleIncomingMessage(self, rawMessage):
+        user = rawMessage.author.id
+        collection = app.database.database.getCollection("sleep", "userdata")
+        self.checkMemberSleep(user, collection)
+
+    async def checkMemberSleep(self, userid, collection):
         currTime = getCurrTimePST()
+        userDocument = app.database.database.getDocument("sleep", "userdata", userid)
+        dirty = False
+        memberData = self.client.get_guild(GUILD_ID).get_member(userid)
+        if not memberData:
+            util.logger.log("sleep", "Could not find discord member {}".format(userid))
+            return False
+        status = memberData.status
+        # Module logic
+        currDay = userDocument["currDay"]
+        if currDay.date() < currTime.date():
+            setNewDay = False
+            # If before 4am and online, we r badge
+            if currTime.hour < 4 and status == discord.Status.online:
+                message = "<@{}> Go to sleep, no coin for u".format(userid)
+                util.logger.log("sleep", message)
+                await self._sendMessage(message)
+                setNewDay = True
+            # Once past 4am, we r good
+            if currTime.hour > 4:
+                message = "<@{}> Nice job sleeping before 12, have some coin!".format(userid)
+                util.logger.log("sleep", message)
+                await self._sendMessage(message)
+                # Give the user coins for sleeping at a good time
+                self._postEvent("earn_coin", { "amount" : 3 , "userID" : userid})
+                setNewDay = True
+            if setNewDay:
+                userDocument["currDay"] = currTime
+                dirty = True
+        if dirty:
+            collection.replace_one({"_id": userid}, userDocument)
+        return True
+
+    async def delayedUpdate(self):
         collection = app.database.database.getCollection("sleep", "userdata")
         cursor = collection.find()
         for userDocument in cursor:
             userid = userDocument["_id"]
-            dirty = False
-            memberData = self.client.get_guild(GUILD_ID).get_member(userid)
-            if not memberData:
-                util.logger.log("sleep", "Could not find discord member {}".format(userid))
-                continue
-            status = memberData.status
-            # Module logic
-            currDay = userDocument["currDay"]
-            if currDay.date() < currTime.date():
-                setNewDay = False
-                # If before 4am and online, we r badge
-                if currTime.hour < 4 and status == discord.Status.online:
-                    message = "<@{}> Go to sleep, no coin for u".format(userid)
-                    util.logger.log("sleep", message)
-                    await self._sendMessage(message)
-                    setNewDay = True
-                # Once past 4am, we r good
-                if currTime.hour > 4:
-                    message = "<@{}> Nice job sleeping before 12, have some coin!".format(userid)
-                    util.logger.log("sleep", message)
-                    await self._sendMessage(message)
-                    # Give the user coins for sleeping at a good time
-                    self._postEvent("earn_coin", { "amount" : 3 , "userID" : userid})
-                    setNewDay = True
-                if setNewDay:
-                    userDocument["currDay"] = currTime
-                    dirty = True
-            if dirty:
-                collection.replace_one({"_id": userid}, userDocument)
-                
+            await self.checkMemberSleep(userid, collection)
     
     # COMMAND: $sleep register
     async def registerUser(self, rawMessage, tokens):

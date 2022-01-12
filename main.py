@@ -15,7 +15,7 @@ CHANNEL = "beepbop"
 CHANNEL_ID = 884636204866347048
 GUILD_ID = 714213228527484928
 # TODO: Let this be set by environment variable?
-UPDATE_INTERVAL = 60 * 60 * 2
+UPDATE_INTERVAL = 60 * 60 * 3
 
 intents = discord.Intents.default()
 intents.members = True
@@ -64,6 +64,9 @@ async def on_message(message):
     # Avoid responding to own messages
     if message.author == client.user:
         return
+    # Run any message handlers
+    for module in modules.values():
+        module.handleAnyMessage(message)
     # only listen to our dedicated channel
     if message.channel.name != CHANNEL:
         return

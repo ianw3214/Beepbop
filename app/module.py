@@ -3,7 +3,7 @@ import app.settings
 # Use prefix instead of channel to differentiate models for now
 # TODO: Use thread channels instead when the API is updated
 class Module:
-    def __init__(self, client, eventQueue, prefix, defaultMessageHandler=None):
+    def __init__(self, client, eventQueue, prefix, defaultMessageHandler=None, anyMessageHandler=None):
         self.prefix = prefix
         self.channel = app.settings.getChannel()
         self.channelID = app.settings.getChannelID()
@@ -12,6 +12,7 @@ class Module:
         self.client = client
         self.eventQueue = eventQueue
         self.defaultMessageHandler = defaultMessageHandler
+        self.anyMessageHandler = anyMessageHandler
         self.eventHandlers = {}
 
     def getPrefix(self):
@@ -19,6 +20,10 @@ class Module:
 
     def getChannel(self):
         return self.channel
+
+    async def handleAnyMessage(self, rawMessage):
+        if self.anyMessageHandler:
+            await self.anyMessageHandler(rawMessage)
 
     async def handleMessageCommand(self, rawMessage, tokens):
         head = ""
