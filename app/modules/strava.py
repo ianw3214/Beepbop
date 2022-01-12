@@ -20,7 +20,7 @@ class StravaModule(app.module.Module):
         # self.expires = rawData["expires"]
 
     # OVERRIDE
-    async def delayedUpdate(self, discordClient):
+    async def delayedUpdate(self):
         pass
 
     def _getAccessToken(self):

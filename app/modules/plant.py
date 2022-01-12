@@ -14,7 +14,7 @@ class PlantModule(app.module.Module):
         self._registerMessageCommand("stats", self.showStats)
         self._registerReactListener(self.waterMessageReact)
 
-    async def delayedUpdate(self, discordClient):
+    async def delayedUpdate(self):
         currTime = datetime.datetime.now()
         collection = app.database.database.getCollection("plant", "userdata")
         cursor = collection.find()

@@ -15,7 +15,7 @@ class CoinModule(app.module.Module):
         self._registerMessageCommand("leaderboard", self.showLeaderboard)
         self._registerEventHandler("earn_coin", self.earnCoin)
 
-    async def delayedUpdate(self, discordClient):
+    async def delayedUpdate(self):
         currTime = datetime.datetime.now()
         WEEK_DELTA = datetime.timedelta(weeks=1)
         collection = app.database.database.getCollection("coin", "rootdata")

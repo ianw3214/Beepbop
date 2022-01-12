@@ -50,7 +50,7 @@ async def flushEvents():
 async def delayedUpdate():
     while True:
         for module in modules.values():
-            await module.delayedUpdate(client)
+            await module.delayedUpdate()
         await flushEvents()
         await asyncio.sleep(UPDATE_INTERVAL)
 

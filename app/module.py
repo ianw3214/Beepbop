@@ -33,7 +33,7 @@ class Module:
         for listener in self.reactListeners:
             await listener(emoji, message, user)
 
-    async def delayedUpdate(self, discordClient):
+    async def delayedUpdate(self):
         pass
 
     def _registerMessageCommand(self, command, func):

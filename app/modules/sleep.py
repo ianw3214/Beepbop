@@ -28,7 +28,7 @@ class SleepModule(app.module.Module):
         self._registerMessageCommand("register", self.registerUser)
         self._registerMessageCommand("track", self.registerUser)
 
-    async def delayedUpdate(self, discordClient):
+    async def delayedUpdate(self):
         print(getCurrTimePST())
         currTime = getCurrTimePST()
         collection = app.database.database.getCollection("sleep", "userdata")
@@ -36,7 +36,7 @@ class SleepModule(app.module.Module):
         for userDocument in cursor:
             userid = userDocument["_id"]
             dirty = False
-            memberData = discordClient.get_guild(GUILD_ID).get_member(userid)
+            memberData = self.client.get_guild(GUILD_ID).get_member(userid)
             if not memberData:
                 util.logger.log("sleep", "Could not find discord member {}".format(userid))
                 continue
