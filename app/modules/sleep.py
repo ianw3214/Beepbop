@@ -31,7 +31,7 @@ class SleepModule(app.module.Module):
     async def handleIncomingMessage(self, rawMessage):
         user = rawMessage.author.id
         collection = app.database.database.getCollection("sleep", "userdata")
-        self.checkMemberSleep(user, collection)
+        await self.checkMemberSleep(user, collection)
 
     async def checkMemberSleep(self, userid, collection):
         currTime = getCurrTimePST()

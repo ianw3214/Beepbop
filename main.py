@@ -66,7 +66,7 @@ async def on_message(message):
         return
     # Run any message handlers
     for module in modules.values():
-        module.handleAnyMessage(message)
+        await module.handleAnyMessage(message)
     # only listen to our dedicated channel
     if message.channel.name != CHANNEL:
         return
