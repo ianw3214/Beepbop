@@ -11,9 +11,6 @@ import app.modules.sleep
 
 import util.logger
 
-CHANNEL = "beepbop"
-CHANNEL_ID = 884636204866347048
-GUILD_ID = 714213228527484928
 # TODO: Let this be set by environment variable?
 UPDATE_INTERVAL = 60 * 60 * 3
 
@@ -68,7 +65,7 @@ async def on_message(message):
     for module in modules.values():
         await module.handleAnyMessage(message)
     # only listen to our dedicated channel
-    if message.channel.name != CHANNEL:
+    if message.channel.name != app.settings.getChannel():
         return
     util.logger.log("core", "message recieved: " + message.content)
     # handle bot commands

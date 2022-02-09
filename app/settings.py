@@ -28,6 +28,13 @@ def getChannelID():
         channelID = data["channelID"]
     return int(channelID)
 
+def getGuildID():
+    guildID = os.getenv('GUILDID')
+    if guildID is None:
+        data = getFileData()
+        guildID = data["guildID"]
+    return int(guildID)
+
 def getMongoDBPassword():
     password = os.getenv('MONGO_PASSWORD')
     if password is None:

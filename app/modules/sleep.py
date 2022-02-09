@@ -3,18 +3,13 @@ import app.module
 import discord
 
 import app.database.database
+import app.settings
 
 import util.logger
 
 import datetime
 import pytz
 # import dateutil
-
-# THIS IS SUPER HARD CODED
-# DUPLICATED FROM main.py
-# TODO: PUT THIS IN A CENTRAL PLACE
-#   EVEN BETTER, JUST GET RID OF IT
-GUILD_ID = 714213228527484928
 
 # TODO: General way to handle time zones better?
 def getCurrTimePST():
@@ -37,7 +32,7 @@ class SleepModule(app.module.Module):
         currTime = getCurrTimePST()
         userDocument = app.database.database.getDocument("sleep", "userdata", userid)
         dirty = False
-        memberData = self.client.get_guild(GUILD_ID).get_member(userid)
+        memberData = self.client.get_guild(app.settings.getGuildID()).get_member(userid)
         if not memberData:
             util.logger.log("sleep", "Could not find discord member {}".format(userid))
             return False
