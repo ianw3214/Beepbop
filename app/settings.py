@@ -49,6 +49,13 @@ def getMongoDBUrl():
         url  = data["mongoDB"]["url"]
     return url 
 
+def getRiotGamesAPI():
+    api = os.getenv('RIOT_GAMES_API')
+    if api is None:
+        data = getFileData()
+        api = data["riot"]["api"]
+    return api
+
 # TODO: Get strava data from some database somewhere
 # needs to be updated so can't use environment variable
 def getStravaData():

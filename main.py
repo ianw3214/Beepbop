@@ -8,6 +8,7 @@ import app.modules.coin
 import app.modules.crystal
 import app.modules.gamble
 import app.modules.sleep
+import app.modules.league
 
 import util.logger
 
@@ -34,6 +35,8 @@ def initModules():
     addModule(gamble)
     # sleep = app.modules.sleep.SleepModule(client, eventQueue)
     # addModule(sleep)
+    league = app.modules.league.LeagueModule(client, eventQueue)
+    addModule(league)
 
 def addModule(module):
     modules[module.getPrefix()] = module
