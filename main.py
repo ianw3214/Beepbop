@@ -35,8 +35,8 @@ def initModules():
     addModule(crystal)
     gamble = app.modules.gamble.GambleModule(client, eventQueue)
     addModule(gamble)
-    sleep = app.modules.sleep.SleepModule(client, eventQueue)
-    addModule(sleep)
+    # sleep = app.modules.sleep.SleepModule(client, eventQueue)
+    # addModule(sleep)
 
 def addModule(module):
     modules[module.getPrefix()] = module
